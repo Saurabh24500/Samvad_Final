@@ -208,9 +208,7 @@ export default function Index() {
               </div>
               <span className="font-display font-bold text-xl">Samvad</span>
             </div>
-            <p className="text-background/60 text-sm">
-              © 2026 CivicConnect. Building better cities together.
-            </p>
+            <p className="text-background/60 text-sm">© 2026 Samvad. Building better cities together.</p>
           </div>
         </div>
       </footer>
