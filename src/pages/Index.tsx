@@ -206,7 +206,7 @@ export default function Index() {
               <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
                 <MapPin className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="font-display font-bold text-xl">CivicConnect</span>
+              <span className="font-display font-bold text-xl">Samvad</span>
             </div>
             <p className="text-background/60 text-sm">
               © 2026 CivicConnect. Building better cities together.
