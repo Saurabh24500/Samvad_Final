@@ -21,7 +21,10 @@ import {
   FileText,
   Eye,
   XCircle,
-  TrendingUp
+  TrendingUp,
+  Upload,
+  X,
+  Image as ImageIcon
 } from 'lucide-react';
 import { z } from 'zod';
 
@@ -71,6 +74,9 @@ export default function CitizenDashboard() {
     location: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const fetchIssues = async () => {
     if (!user) return;
@@ -92,6 +98,63 @@ export default function CitizenDashboard() {
   useEffect(() => {
     fetchIssues();
   }, [user]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'File too large',
+          description: 'Please select an image under 5MB',
+          variant: 'destructive',
+        });
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: 'Invalid file type',
+          description: 'Please select an image file',
+          variant: 'destructive',
+        });
+        return;
+      }
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
+  };
+
+  const uploadImage = async (userId: string): Promise<string | null> => {
+    if (!imageFile) return null;
+    
+    setUploadingImage(true);
+    const fileExt = imageFile.name.split('.').pop();
+    const fileName = `${userId}/${Date.now()}.${fileExt}`;
+    
+    const { error } = await supabase.storage
+      .from('issue-images')
+      .upload(fileName, imageFile);
+    
+    setUploadingImage(false);
+    
+    if (error) {
+      console.error('Image upload error:', error);
+      return null;
+    }
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from('issue-images')
+      .getPublicUrl(fileName);
+    
+    return publicUrl;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,12 +179,19 @@ export default function CitizenDashboard() {
 
     setSubmitting(true);
 
+    // Upload image if present
+    let imageUrl: string | null = null;
+    if (imageFile) {
+      imageUrl = await uploadImage(user.id);
+    }
+
     const { error } = await supabase.from('issues').insert({
       title: formData.title.trim(),
       description: formData.description.trim(),
       category: formData.category as IssueCategory,
       location: formData.location.trim(),
       citizen_id: user.id,
+      image_url: imageUrl,
     });
 
     if (error) {
@@ -136,6 +206,7 @@ export default function CitizenDashboard() {
         description: 'Your issue has been reported successfully.',
       });
       setFormData({ title: '', description: '', category: '', location: '' });
+      removeImage();
       setDialogOpen(false);
       fetchIssues();
     }
@@ -239,6 +310,46 @@ export default function CitizenDashboard() {
                 />
                 {errors.description && (
                   <p className="text-sm text-destructive">{errors.description}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Photo (Optional)</Label>
+                {imagePreview ? (
+                  <div className="relative">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="w-full h-40 object-cover rounded-lg border border-border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2 h-8 w-8"
+                      onClick={removeImage}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Click to upload an image
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PNG, JPG up to 5MB
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                  </label>
                 )}
               </div>
 
@@ -418,6 +529,16 @@ export default function CitizenDashboard() {
                 <Label className="text-muted-foreground">Description</Label>
                 <p className="text-sm">{selectedIssue.description}</p>
               </div>
+              {selectedIssue.image_url && (
+                <div>
+                  <Label className="text-muted-foreground">Photo</Label>
+                  <img 
+                    src={selectedIssue.image_url} 
+                    alt="Issue" 
+                    className="w-full h-48 object-cover rounded-lg mt-2 border border-border"
+                  />
+                </div>
+              )}
               {selectedIssue.engineer_name && (
                 <div>
                   <Label className="text-muted-foreground">Assigned Engineer</Label>
