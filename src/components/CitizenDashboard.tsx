@@ -458,35 +458,46 @@ export default function CitizenDashboard() {
                       setDetailsOpen(true);
                     }}
                   >
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold">{issue.title}</h3>
-                          <Badge variant="outline" className="capitalize text-xs">
-                            {issue.category}
-                          </Badge>
+                    <div className="flex gap-4">
+                      {issue.image_url && (
+                        <div className="flex-shrink-0">
+                          <img 
+                            src={issue.image_url} 
+                            alt="Issue" 
+                            className="w-20 h-20 object-cover rounded-lg border border-border"
+                          />
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {issue.location}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {new Date(issue.created_at).toLocaleDateString()}
-                          </span>
+                      )}
+                      <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold">{issue.title}</h3>
+                            <Badge variant="outline" className="capitalize text-xs">
+                              {issue.category}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              {issue.location}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {new Date(issue.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
-                          <span className="flex items-center gap-1">
-                            <StatusIcon className="w-3 h-3" />
-                            {status.label}
-                          </span>
+                        <div className="flex items-center gap-3">
+                          <div className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
+                            <span className="flex items-center gap-1">
+                              <StatusIcon className="w-3 h-3" />
+                              {status.label}
+                            </span>
+                          </div>
+                          <Button variant="ghost" size="icon">
+                            <Eye className="w-4 h-4" />
+                          </Button>
                         </div>
-                        <Button variant="ghost" size="icon">
-                          <Eye className="w-4 h-4" />
-                        </Button>
                       </div>
                     </div>
                   </div>
