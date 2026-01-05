@@ -89,6 +89,7 @@ export default function IssueMap({ issues }: IssueMapProps) {
 
     const bounds = new google.maps.LatLngBounds();
     let hasValidCoords = false;
+    let activeInfoWindow: google.maps.InfoWindow | null = null;
 
     // Add markers for issues with coordinates
     issues.forEach((issue) => {
@@ -102,6 +103,7 @@ export default function IssueMap({ issues }: IssueMapProps) {
           bounds.extend(position);
 
           const color = statusColors[issue.status] || statusColors.pending;
+          const statusLabel = issue.status.replace('_', ' ').charAt(0).toUpperCase() + issue.status.replace('_', ' ').slice(1);
 
           const marker = new google.maps.Marker({
             position,
@@ -109,7 +111,7 @@ export default function IssueMap({ issues }: IssueMapProps) {
             title: issue.title,
             icon: {
               path: google.maps.SymbolPath.CIRCLE,
-              scale: 10,
+              scale: 8,
               fillColor: color,
               fillOpacity: 0.9,
               strokeColor: '#ffffff',
@@ -117,27 +119,43 @@ export default function IssueMap({ issues }: IssueMapProps) {
             },
           });
 
-          // Info window on click
+          // Info window content
           const infoWindow = new google.maps.InfoWindow({
             content: `
-              <div style="padding: 8px; max-width: 200px;">
-                <h3 style="font-weight: 600; margin-bottom: 4px;">${issue.title}</h3>
-                <p style="font-size: 12px; color: #666; margin-bottom: 4px;">${issue.location}</p>
+              <div style="padding: 10px; max-width: 220px; font-family: system-ui, sans-serif;">
+                <h3 style="font-weight: 600; margin: 0 0 6px 0; font-size: 14px; color: #1a1a1a;">${issue.title}</h3>
+                <p style="font-size: 12px; color: #666; margin: 0 0 6px 0;">📍 ${issue.location}</p>
+                <p style="font-size: 11px; color: #888; margin: 0 0 8px 0;">🕐 ${new Date(issue.created_at).toLocaleDateString()}</p>
                 <span style="
                   display: inline-block;
-                  padding: 2px 8px;
+                  padding: 3px 10px;
                   border-radius: 12px;
                   font-size: 11px;
-                  font-weight: 500;
+                  font-weight: 600;
                   color: white;
                   background-color: ${color};
-                ">${issue.status.replace('_', ' ')}</span>
+                  text-transform: capitalize;
+                ">${statusLabel}</span>
               </div>
             `,
           });
 
-          marker.addListener('click', () => {
+          // Show on hover (mouseover)
+          marker.addListener('mouseover', () => {
+            if (activeInfoWindow) {
+              activeInfoWindow.close();
+            }
             infoWindow.open(mapInstanceRef.current, marker);
+            activeInfoWindow = infoWindow;
+          });
+
+          // Keep open on click
+          marker.addListener('click', () => {
+            if (activeInfoWindow && activeInfoWindow !== infoWindow) {
+              activeInfoWindow.close();
+            }
+            infoWindow.open(mapInstanceRef.current, marker);
+            activeInfoWindow = infoWindow;
           });
 
           markersRef.current.push(marker);
