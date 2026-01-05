@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Tables, TablesUpdate } from '@/integrations/supabase/types';
+import IssueMap from '@/components/IssueMap';
 import { 
   MapPin, 
   Clock, 
@@ -24,7 +25,8 @@ import {
   Users,
   DollarSign,
   Building2,
-  Save
+  Save,
+  Map
 } from 'lucide-react';
 
 type Issue = Tables<'issues'>;
@@ -161,6 +163,20 @@ export default function AuthorityDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Issue Map */}
+      <Card className="glass-card mb-8">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Map className="w-5 h-5 text-primary" />
+            <CardTitle>Issue Locations</CardTitle>
+          </div>
+          <CardDescription>Colored dots indicate issue status at each location</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <IssueMap issues={issues} />
+        </CardContent>
+      </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
