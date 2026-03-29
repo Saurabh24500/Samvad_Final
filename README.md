@@ -3,6 +3,8 @@
 Check now.....
 Check the working URL: https://civic-issues-registration.lovable.app
 
+You can use this we made this for SIH hacathon.
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
