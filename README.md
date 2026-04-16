@@ -1,4 +1,4 @@
-# Welcome to your Lovable projectIt,s versin fo ig
+# Welcome to your Lovable projectIt,s versin of ig
 
 Check now.....
 Check the working URL: https://civic-issues-registration.lovable.app
