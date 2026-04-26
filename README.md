@@ -4,7 +4,7 @@ Check now.....
 Check the working URL: https://civic-issues-registration.lovable.app
 
 You can use this we made this for SIH hacathon.
-We didn't went in it because we miss to see emails but still we happy we chase the first round which is college level.
+We didn't went in it because we miss to see emails but still we happy we chase the first round which is college level.And we learn many things by this project.
 
 We will improve it more like according to solve more problem and simple to use.
 
