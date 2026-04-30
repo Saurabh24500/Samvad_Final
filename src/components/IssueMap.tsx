@@ -8,7 +8,7 @@ interface IssueMapProps {
   issues: Issue[];
 }
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyC0KWOxYhICkZFaSFCo3A5ogd6Ha7qqljU';
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyC0KWOxYhICkZFaSFCo3A5ogd6Ha7qqljU';
 
 const statusColors: Record<string, string> = {
   pending: '#f59e0b',      // Warning yellow
@@ -28,26 +28,35 @@ export default function IssueMap({ issues }: IssueMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
 
   useEffect(() => {
+    console.log('IssueMap: Component mounted, issues:', issues);
+    console.log('GOOGLE_MAPS_API_KEY:', GOOGLE_MAPS_API_KEY);
+    
     // Load Google Maps script
     if (!window.google) {
+      console.log('IssueMap: Loading Google Maps script...');
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=visualization`;
       script.async = true;
       script.defer = true;
       script.onload = () => {
+        console.log('IssueMap: Google Maps script loaded successfully');
         setMapLoaded(true);
         setLoading(false);
+        setError(null);
       };
-      script.onerror = () => {
-        console.error('Failed to load Google Maps');
+      script.onerror = (e) => {
+        console.error('IssueMap: Failed to load Google Maps', e);
         setLoading(false);
+        setError('Failed to load Google Maps. Please check your API key and ensure Maps JavaScript API is enabled.');
       };
       document.head.appendChild(script);
     } else {
+      console.log('IssueMap: Google Maps already loaded');
       setMapLoaded(true);
       setLoading(false);
     }
@@ -56,6 +65,7 @@ export default function IssueMap({ issues }: IssueMapProps) {
   useEffect(() => {
     if (!mapLoaded || !mapRef.current) return;
 
+    console.log('IssueMap: Initializing map, mapRef.current:', mapRef.current);
     // Initialize map centered on India
     const map = new google.maps.Map(mapRef.current, {
       zoom: 5,
@@ -71,6 +81,7 @@ export default function IssueMap({ issues }: IssueMapProps) {
       ],
     });
 
+    console.log('IssueMap: Map initialized:', map);
     mapInstanceRef.current = map;
 
     return () => {
@@ -81,7 +92,12 @@ export default function IssueMap({ issues }: IssueMapProps) {
   }, [mapLoaded]);
 
   useEffect(() => {
-    if (!mapInstanceRef.current || !mapLoaded) return;
+    if (!mapInstanceRef.current || !mapLoaded) {
+      console.log('IssueMap: Skipping marker update - mapInstanceRef.current:', !!mapInstanceRef.current, 'mapLoaded:', mapLoaded);
+      return;
+    }
+
+    console.log('IssueMap: Processing issues for markers, count:', issues.length);
 
     // Clear existing markers
     markersRef.current.forEach(marker => marker.setMap(null));
@@ -98,6 +114,7 @@ export default function IssueMap({ issues }: IssueMapProps) {
         const lng = parseFloat(issue.longitude.toString());
         
         if (!isNaN(lat) && !isNaN(lng)) {
+          console.log(`IssueMap: Adding marker for issue "${issue.title}" at [${lat}, ${lng}]`);
           hasValidCoords = true;
           const position = { lat, lng };
           bounds.extend(position);
@@ -165,11 +182,15 @@ export default function IssueMap({ issues }: IssueMapProps) {
 
     // Fit bounds if we have markers
     if (hasValidCoords && markersRef.current.length > 0) {
+      console.log(`IssueMap: Created ${markersRef.current.length} markers, fitting bounds`);
       mapInstanceRef.current.fitBounds(bounds);
       // Don't zoom in too much for single marker
       if (markersRef.current.length === 1) {
         mapInstanceRef.current.setZoom(14);
       }
+    } else {
+      console.log(`IssueMap: No valid markers found. hasValidCoords=${hasValidCoords}, markersCount=${markersRef.current.length}`);
+      console.log('Issues data:', issues);
     }
   }, [issues, mapLoaded]);
 
@@ -177,6 +198,17 @@ export default function IssueMap({ issues }: IssueMapProps) {
     return (
       <div className="w-full h-[400px] rounded-xl bg-muted/50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-[400px] rounded-xl bg-red-50 border border-red-200 flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-red-700 font-semibold mb-2">Map Loading Error</p>
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
       </div>
     );
   }
