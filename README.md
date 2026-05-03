@@ -97,35 +97,3 @@ Bash
 npm install leaflet react-leaflet
 💻 Example Code (Heat Dots)
 JSX
-import { MapContainer, TileLayer, CircleMarker } from "react-leaflet";
-
-const issues = [
-  { lat: 22.3072, lng: 73.1812, count: 10 }, // High
-  { lat: 22.30, lng: 73.19, count: 5 },      // Medium
-  { lat: 22.31, lng: 73.17, count: 2 },      // Low
-];
-
-const getColor = (count) => {
-  if (count > 8) return "red";
-  if (count > 4) return "yellow";
-  return "green";
-};
-
-export default function MapView() {
-  return (
-    <MapContainer center={[22.3072, 73.1812]} zoom={13} style={{ height: "500px" }}>
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-
-      {issues.map((issue, i) => (
-        <CircleMarker
-          key={i}
-          center={[issue.lat, issue.lng]}
-          radius={10}
-          pathOptions={{ color: getColor(issue.count) }}
-        />
-      ))}
-    </MapContainer>
-  );
-}
