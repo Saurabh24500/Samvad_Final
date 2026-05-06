@@ -2,7 +2,7 @@
 
 🚀 Live Demo: https://civic-issues-registration.lovable.app
 
----
+------
 
 📌 About the Project
 
@@ -12,7 +12,7 @@ Even though we missed further rounds, this project helped us learn real-world de
 💡 Idea:
 Inspired by real problems in our village, this platform allows citizens to report civic issues easily.
 
-------
+---------
 
 ✨ Features
 
